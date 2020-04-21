@@ -17,9 +17,6 @@ else
 }
 #>
 
-Add-Type -AssemblyName PresentationCore
-Add-Type -AssemblyName WindowsBase
-
 function PSleep([int]$seconds, [string]$action, [string]$description) {
 	# See below for use. 
 	# EXAMPLE - psleep 15 Syncing "Synchronizing with Office365"
@@ -83,8 +80,11 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 	[Alias("pls")]
 	param ([parameter(Mandatory = $true)]
 		[string[]]$list = @(),
+		
 		[int]$limit = 0,
+		
 		[string]$prompt = $null,
+		
 		[boolean]$pclear = $false)
 	
 	$select = @(); $ret = @(); $offset = 0
@@ -282,7 +282,9 @@ function PSelect {
 	[Alias("psel")]
 	param ([parameter(Mandatory = $true)]
 		[string[]]$list = @(),
+		
 		[string]$prompt = $null,
+		
 		[boolean]$pclear = $false)
 	
 	if ($list.Length -le 0) # Check that array exists and isn't empty
@@ -364,7 +366,9 @@ function PDebug {
 function PInput {
 	param ([parameter(Mandatory = $true)]
 		[string]$prompt = $null,
+		
 		[int]$req = -1,
+		
 		[int]$allownull = 0)
 	
 	if ($req -eq -1 -and !$allownull) {
@@ -396,6 +400,7 @@ function PInput {
 
 function PTitle {
 	param ([string]$title = "Paschal IT",
+		
 		[string]$version = "0.0")
 	
 	$Host.UI.RawUI.WindowTitle = "$title v$version"
@@ -434,18 +439,26 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 		# The computer to execute against. By default, Get-InstalledSoftware reads registry keys on the local computer.
 		[Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
 		[String]$ComputerName = $env:COMPUTERNAME,
+		
 		# Attempt to start the remote registry service if it is not already running. This parameter will only take effect if the service is not disabled.
 
+		
 		[Switch]$StartRemoteRegistry,
+		
 		# Some software packages, such as DropBox install into a users profile rather than into shared areas. Get-InstalledSoftware can increase the search to include each loaded user hive.
 
+		
 		#
 
+		
 		# If a registry hive is not loaded it cannot be searched, this is a limitation of this search style.
 
+		
 		[Switch]$IncludeLoadedUserHives,
+		
 		# By default Get-InstalledSoftware will suppress the display of entries with minimal information. If no DisplayName is set it will be hidden from view. This behaviour may be changed using this parameter.
 
+		
 		[Switch]$IncludeBlankNames
 	)
 	
@@ -559,12 +572,30 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 }
 
 function Enable-PaschalEXCContacts {
+<#
+	.SYNOPSIS
+		Adds all existing Paschal contacts to a specified Exchange mailbox.
+	
+	.DESCRIPTION
+		Adds all existing Paschal contacts from Active Directory to a specified Exchange mailbox.
+	
+	.PARAMETER TargetMailbox
+		(Required) Email Address of the Exchange mailbox to receive new contacts.
+	
+	.PARAMETER Credentials
+		(Optional) Exchange credentials with permissions to Read, Write, and Impersonate.  If not supplied via parameters, the user will be prompted to input credentials in order to complete the command.
+	
+	.EXAMPLE
+		PS C:\> Enable-PaschalEXCContacts -TargetMailbox email@gopaschal.com -Credentials $myCred
+#>
+	
 	[CmdletBinding()]
 	param
 	(
 		[Parameter(Mandatory = $false, ValueFromPipeline = $true)]
 		[ValidatePattern("@gopaschal\.com|@paschalcorp\.com")]
 		[string[]]$TargetMailbox,
+		
 		[Parameter(Mandatory = $false)]
 		[PSCredential]$Credentials = (Get-Credential srv -Message "Enter Exchange Server credentials.")
 	)
@@ -665,15 +696,47 @@ function Enable-PaschalEXCContacts {
 }
 
 function Update-PaschalEXCContacts {
+<#
+	.SYNOPSIS
+		Updates Paschal controlled properties of Paschal contacts on all company phones.
+	
+	.DESCRIPTION
+		Updates Paschal controlled properties (Display Name, Primary Email, Mobile Phone, Business Phone, SID) of all Paschal contacts with "AR01-PS" in the Company Name on all company phones, as listed in Active Directory.  If missing contacts are found, the script will attempt to create a contact to replace them.
+	
+	.PARAMETER TargetMailboxes
+		(Optional) A string or array of strings containing Email Addresses of specific Exchange mailboxes to be targeted for updates.  If not supplied via parameter, the script will run for all active mailboxes on the Paschal domain.
+	
+	.PARAMETER Credentials
+		(Optional) Exchange server credentials with permissions to Read, Write, and Impersonate.  If not supplied via parameter, the user will be prompted to input credentials in order to complete the command.
+	
+	.PARAMETER TargetContacts
+		A description of the TargetContacts parameter.
+	
+	.EXAMPLE
+		PS C:\> Update-PaschalEXCContacts -TargetMailboxes "email@gopaschal.com" -Credentials $myCred
+	
+	.EXAMPLE
+		PS C:\> Update-PaschalEXCContacts -Credentials $myCred
+	
+	.NOTES
+		Additional information about the function.
+#>
+	
 	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $false, ValueFromPipeline = $true)]
-		[ValidatePattern("@gopaschal\.com|@paschalcorp\.com")]
+	param
+	(
+		[Parameter(Mandatory = $false,
+				   ValueFromPipeline = $true)]
+		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
 		[string[]]$TargetMailboxes = @((Get-ADUser -Filter * -SearchBase "OU=Users, OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mail, Mobile | Where-Object {
 					$_.Mobile
 				}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail),
+		
 		[Parameter(Mandatory = $false)]
-		[PSCredential]$Credentials = (Get-Credential srv)
+		[PSCredential]$Credentials = (Get-Credential srv),
+		
+		[Parameter(Mandatory = $false)]
+		[string[]]$TargetContacts
 	)
 	
 	$ErrorActionPreference = 'Continue'
@@ -685,14 +748,40 @@ function Update-PaschalEXCContacts {
 	if (-not $exchcred) {
 		$exchcred = Get-Credential srv
 	}
-	$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=Paschalcorp, DC=com" -Properties Mail, Mobile, TelephoneNumber | Where-Object {
-		$_.Mail -and ($_.Mobile -or $_.TelephoneNumber) -and $_.Name -notmatch "ADM"
+	
+	if ($TargetContacts) {
+		$userlist = $TargetContacts | ForEach-Object {
+			Get-ADUser -Filter "ANR -eq '$_'" -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
+				$_.DistinguishedName -notmatch "Terminated"
+			}
+		}
+	} else {
+		$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
+			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp"
+		}
 	}
+	
+	$contacthash = $userlist |
+	Where-Object {
+		$_.DistinguishedName -match "OU=Users" -or $_.SamAccountName -eq "csr-on-call"
+	} |
+	Select-PSFObject @(
+		"GivenName as FirstName"
+		"Surname as LastName"
+		"Name as DisplayName"
+		"Mobile as MobilePhone"
+		"TelephoneNumber as BusinessPhone"
+		"Mail as EmailAddress"
+		"SID as Mileage"
+		"Title"
+		"Department"
+	) |
+	ConvertTo-PSFHashtable -Include FirstName, LastName, BusinessPhone, MobilePhone, DisplayName, Department, Title, EmailAddress, Mileage
 	$emailtext = $null; $mailboxcount = 1;
 	
 	Clear-Host
 	foreach ($mailbox in $TargetMailboxes) {
-		$updatecount = 0; $updatefailed = @(); $contactlist = @();
+		$updatecount = 0; $updatefailed = @(); $contactlist = @(); $updateadded = @();
 		
 		Write-Host -ForegroundColor White ($text = "Current Target - $mailbox ($mailboxcount of $($TargetMailboxes.Count))")
 		for ($i = 0; $i -lt $text.Length; $i++) {
@@ -700,9 +789,7 @@ function Update-PaschalEXCContacts {
 		}
 		Write-Host ""
 		
-		$contactlist = Get-EXCContacts -MailboxName $mailbox -Credentials $exchcred -useImpersonation | Where-Object {
-			$_.CompanyName -match "AR01-PS"
-		}
+		$contactlist = Get-PaschalEXCContacts -MailboxName $mailbox -Credentials $exchcred
 		
 		if (-not $contactlist) {
 			$emailtext += @"
@@ -712,29 +799,30 @@ Unable to locate Contacts on Exchange Mailbox
 
 "@
 		} else {
-			foreach ($contact in $contactlist) {
-				$user = $null;
-				if ($contact.Mileage) {
-					$user = $userlist | Where-Object {
-						$_.SID -eq $contact.Mileage
-					}
-				} else {
-					$user = $userlist | Where-Object {
+			foreach ($contact in $contacthash) {
+				$contactmatch = $null;
+				
+				$contactmatch = $contactlist | Where-Object {
+					$_.Mileage -eq $contact.Mileage
+				}
+				
+				if (-not $contactmatch) {
+					$contactmatch = $contactlist | Where-Object {
 						$(
 							$count = 0
-							if ($_.GivenName -eq $contact.GivenName) {
+							if ($_.GivenName -eq $contact.FirstName) {
 								$count++
 							}
-							if ($_.Surname -eq $contact.Surname) {
+							if ($_.Surname -eq $contact.LastName) {
 								$count++
 							}
-							if ($_.Name -eq $contact.DisplayName) {
+							if ($_.DisplayName -eq $contact.DisplayName) {
 								$count++
 							}
-							if ($_.Mobile -eq $contact.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone]) {
+							if ($_.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] -eq $contact.MobilePhone) {
 								$count++
 							}
-							if ($_.Mail -eq $contact.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1].Address) {
+							if ($_.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1].Address -eq $contact.EmailAddress) {
 								$count++
 							}
 							$count
@@ -742,39 +830,58 @@ Unable to locate Contacts on Exchange Mailbox
 					}
 				}
 				
-				if (-not $user) {
-					Write-Host -ForegroundColor Red "Contact $($contact.DisplayName) was not found in current list of Active Directory users."
-					$updatefailed += "$($contact.DisplayName)(Locate)"
+				if (-not $contactmatch) {
+					try {
+						New-EXCContact -MailboxName $mailbox -MailboxOwnerDistinguishedName (Get-ADUser -Filter "ANR -eq '$mailbox'").DistinguishedName -FirstName $contact.FirstName -LastName $contact.LastName -DisplayName $contact.DisplayName -BusinessPhone $contact.BusinessPhone -MobilePhone $contact.MobilePhone -EmailAddress $contact.EmailAddress -Department $contact.Department -JobTitle $contact.Title -CompanyName "Paschal Air, Plumbing & Electric - AR01-PS" -Credentials $exchcred -useImpersonation
+						Write-Host -ForegroundColor Green "Missing contact found - " -NoNewline
+						Write-Host -ForegroundColor White $($contact.DisplayName) -NoNewline
+						Write-Host -ForegroundColor Green " - Created Successfully"
+						$updateadded += $contact.DisplayName
+						try {
+							$temp = Get-PaschalEXCContacts -MailboxName $mailbox -EmailAddress $contact.EmailAddress -Credentials $exchcred
+							$temp.Mileage = $contact.Mileage
+							$temp.Update("AutoResolve")
+							Write-Host -ForegroundColor Green "Set SID as Mileage successfully"
+						} catch {
+							Write-Host -ForegroundColor Yellow "Could not set SID as Mileage"
+						}
+						$updatecount++
+					} catch {
+						Write-Host -ForegroundColor Red "Contact creation failed for missing contact - " -NoNewline
+						Write-Host -ForegroundColor White $contact.DisplayName
+						$updatefailed += "$($contact.DisplayName)(Creation)"
+					}
+					
 				} else {
 					try {
 						$itemsupdated = @()
-						$contact.Mileage = $user.SID
+						$contactmatch.Mileage = $contact.Mileage
 						$itemsupdated += "SID"
-						$contact.DisplayName = $user.Name
+						$contactmatch.DisplayName = $contact.DisplayName
 						$itemsupdated += "DisplayName"
-						if ($user.Mobile) {
-							$contact.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] = $user.Mobile
+						if ($contact.MobilePhone) {
+							$contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] = $contact.MobilePhone
 							$itemsupdated += "MobilePhone"
 						}
-						if ($user.TelephoneNumber) {
-							$contact.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::BusinessPhone] = $user.TelephoneNumber
+						if ($contact.BusinessPhone) {
+							$contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::BusinessPhone] = $contact.BusinessPhone
 							$itemsupdated += "BusinessPhone"
 						}
-						if ($user.Mail) {
-							$contact.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1] = $user.Mail
+						if ($contact.EmailAddress) {
+							$contactmatch.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1] = $contact.EmailAddress
 							$itemsupdated += "EmailAddress"
 						}
-						$contact.Update("AutoResolve")
+						$contactmatch.Update("AutoResolve")
 						
 						Write-Host -ForegroundColor Green "Contact " -NoNewline
-						Write-Host -ForegroundColor White $($contact.DisplayName) -NoNewline
+						Write-Host -ForegroundColor White $($contactmatch.DisplayName) -NoNewline
 						Write-Host -ForegroundColor Green " updated " -NoNewline
 						Write-Host -ForegroundColor White "$($itemsupdated -join ', ')" -NoNewline
 						Write-Host -ForegroundColor Green " successfully."
 						
 						$updatecount++
 					} catch {
-						$updatefailed += "$($contact.DisplayName)(Write)"
+						$updatefailed += "$($contactmatch.DisplayName)(Write)"
 					}
 				}
 			}
@@ -800,20 +907,186 @@ Unable to locate Contacts on Exchange Mailbox
 	$updatecount
 	
 "@
-	
-	if ($updatefailed) {
-		$emailtext += @"
+		
+		if ($updatefailed) {
+			$emailtext += @"
 Contacts Failed to Update
 $($updatefailed -join "`r`n")
 
 "@
+		}
+		
+		$mailboxcount++
 	}
 	
-	$mailboxcount++
+	Send-MailMessage -From 'Contacts Update <it@gopaschal.com>' -To 'Paschal IT <it@gopaschal.com>' -Subject "Contacts Update ($(Get-Date -Format 'MM/dd/yyyy'))" -Body $emailtext -DeliveryNotificationOption OnFailure, OnSuccess -SmtpServer 'mail.paschalcorp.com'
 }
 
-Send-MailMessage -From 'Contacts Update <it@gopaschal.com>' -To 'Michael M Carter <mcarter@gopaschal.com>' -Subject "Contacts Update ($(Get-Date -Format 'MM/dd/yyyy'))" -Body $emailtext -DeliveryNotificationOption OnFailure, OnSuccess -SmtpServer 'mail.paschalcorp.com'
 
+function Get-PaschalEXCContacts {
+<#
+	.SYNOPSIS
+		Retrieves contacts from an Exchange mailbox within the Paschal domain.
+	
+	.DESCRIPTION
+		Retrieves contacts from a specified Exchange mailbox within the Paschal domain, with options to filter by Name (First, Last, Display) or Email Address.  If no filter is specified, Get-PaschalEXCContacts returns all contacts from the mailbox.
+	
+	.PARAMETER MailboxName
+		(Required) Email address of the Exchange mailbox from which to retrieve contacts.
+	
+	.PARAMETER Credentials
+		(Optional) Exchange server credentials with permissions to Read, Write, and Impersonate.  If not supplied, the user will be prompted for the required credentials in order to complete the command.
+	
+	.PARAMETER EmailAddress
+		(Optional) Email Address of target contact with which to filter results.
+	
+	.PARAMETER FirstName
+		(Optional) First Name of target contact with which to filter results.  May be used singularly or paired with LastName.
+	
+	.PARAMETER LastName
+		(Optional) Last Name of target contact with which to filter results.  May be used singularly or paired with FirstName.
+	
+	.PARAMETER DisplayName
+		(Optional) Full Display Name of target contact with which to filter results.
+	
+	.PARAMETER All
+		(Optional) If $true, returns all contacts from the specified Exchange mailbox.  If $false, refines results to only those with Company Name matching "AR01-PS".
+	
+	.EXAMPLE
+		PS C:\> Get-PaschalEXCContacts -MailboxName email@domain.com -Credentials $myCred -EmailAddress contact@domain.com
+	
+		Retrieves contacts with email addresses matching "contact@domain.com" from the Exchange mailbox "email@domain.com".
+	
+	.EXAMPLE
+		PS C:\> Get-PaschalEXCContacts -MailboxName email@domain.com
+	
+		Retrieves ALL contacts with Company Name matching "AR01-PS" from the Exchange mailbox "email@domain.com", prompting for credentials.
+	
+	.EXAMPLE
+		PS C:\> Get-PaschalEXCContacts -MailboxName email@domain.com -Credentials $myCred -All
+	
+		Retrieves ALL contacts from the Exchange mailbox "email@domain.com".
+#>
+	
+	[CmdletBinding(DefaultParameterSetName = 'Default')]
+	param
+	(
+		[Parameter(ParameterSetName = 'EmailAddress',
+				   Mandatory = $true,
+				   ValueFromPipeline = $true,
+				   Position = 1)]
+		[Parameter(ParameterSetName = 'FirstLastName',
+				   Mandatory = $true,
+				   ValueFromPipeline = $true,
+				   Position = 1)]
+		[Parameter(ParameterSetName = 'DisplayName',
+				   Mandatory = $true,
+				   ValueFromPipeline = $true,
+				   Position = 1)]
+		[Parameter(ParameterSetName = 'Default',
+				   Position = 1)]
+		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
+		[string]$MailboxName,
+		
+		[Parameter(ParameterSetName = 'EmailAddress')]
+		[Parameter(ParameterSetName = 'FirstLastName')]
+		[Parameter(ParameterSetName = 'DisplayName')]
+		[Parameter(ParameterSetName = 'Default')]
+		[pscredential]$Credentials = (Get-Credential srv),
+		
+		[Parameter(ParameterSetName = 'EmailAddress',
+				   Position = 2)]
+		[string]$EmailAddress,
+		
+		[Parameter(ParameterSetName = 'FirstLastName',
+				   Position = 2)]
+		[string]$FirstName,
+		
+		[Parameter(ParameterSetName = 'FirstLastName',
+				   Position = 3)]
+		[string]$LastName,
+		
+		[Parameter(ParameterSetName = 'DisplayName',
+				   Position = 2)]
+		[string]$DisplayName,
+		
+		[Parameter(ParameterSetName = 'EmailAddress')]
+		[Parameter(ParameterSetName = 'FirstLastName')]
+		[Parameter(ParameterSetName = 'DisplayName')]
+		[Parameter(ParameterSetName = 'Default')]
+		[switch]$All = $false
+	)
+	
+	begin {
+		try {
+			$contacts = Get-EXCContacts -MailboxName $MailboxName -Credentials $Credentials -useImpersonation
+			if (-not $All) {
+				$contacts = $contacts | Where-Object {
+					$_.CompanyName -match "AR01-PS"
+				}
+			}
+		} catch {
+			throw "Contacts could not be retrieved for Mailbox $MailboxName.`r`nPlease ensure you are inputting a valid Paschal email address and try again."
+		}
+	}
+	process {
+		switch ($PsCmdlet.ParameterSetName) {
+			'EmailAddress' {
+				
+				$contacts = $contacts | Where-Object {
+					$_.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1].Address -eq $EmailAddress
+				}
+				
+				break
+			}
+			'FirstLastName' {
+				
+				if ($FirstName) {
+					$contacts = $contacts | Where-Object {
+						$_.GivenName -eq $FirstName
+					}
+				}
+				if ($LastName) {
+					$contacts = $contacts | Where-Object {
+						$_.Surname -eq $LastName
+					}
+				}
+				
+				break
+			}
+			'DisplayName' {
+				
+				$contacts = $contacts | Where-Object {
+					$_.DisplayName -eq $DisplayName
+				}
+				
+				break
+			}
+		}
+		
+	}
+	end {
+		if ($contacts) {
+			return $contacts
+		} else {
+			Write-Host ""
+			Write-Host -ForegroundColor Red "No contact was found in Mailbox $MailboxName matching search criteria."
+			Write-Host -ForegroundColor Red "Please double check your search criteria and try again."
+			Write-Host ""
+			return $null
+		}
+	}
 }
 
-exit
+
+function Update-PaschalFunctions {
+	[CmdletBinding()]
+	param ()
+	
+	Copy-Item '\\wfs01v\Paschal$\Deployment\Reference\Replace\Paschal_Functions\Paschal_Functions.psm1' C:\Paschal\Reference\Paschal_Functions\Paschal_Functions.psm1 -Force
+	Copy-Item '\\wfs01v\Paschal$\Deployment\Reference\Replace\Paschal_Functions\Paschal_Functions.psd1' C:\Paschal\Reference\Paschal_Functions\Paschal_Functions.psd1 -Force
+	
+	Remove-Module Paschal_Functions
+	Import-Module Paschal_Functions -Global
+	
+}
