@@ -32,14 +32,12 @@ function PSleep([int]$seconds, [string]$action, [string]$description) {
 
 function PPS([string]$computer) {
 	if ($computer) {
-	}
- else {
+	} else {
 		$computer = (Read-Host -Prompt `n'Computer to connect to?')
 	}
 	if ($env:username -match '.+?\-adm$' -or $env:username -match 'srv') {
 		Enter-PSSession -ComputerName $computer -Credential (Get-Credential $env:username)
-	}
- else {
+	} else {
 		Enter-PSSession -ComputerName $computer -Credential (Get-Credential "$($env:username)-adm")
 	}
 }
@@ -51,7 +49,7 @@ function ADSync {
 	Write-Host "Syncing to Office 365, Please Wait....."
 	powershell.exe "Invoke-Command -ComputerName WDC01V -ScriptBlock  {import-module 'C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync\ADSync.psd1' ; Start-ADSyncSyncCycle -PolicyType Initial}"
 	Write-Host "Waiting For Sync to Complete"
-	psleep 60 Syncing "Synchronizing with Office365"
+	PSleep 60 Syncing "Synchronizing with Office365"
 	Write-Host ""
 	Write-Host -ForegroundColor Green "Done!"
 	Write-Host ""
@@ -95,8 +93,8 @@ function PListSelect {
 		if (!$pclear) {
 			Clear-Host
 		}
-		write-host -ForegroundColor Red "No input array provided.  Array or multiple values required.  Press enter to continue."
-		read-host
+		Write-Host -ForegroundColor Red "No input array provided.  Array or multiple values required.  Press enter to continue."
+		Read-Host
 		break
 	}
 	
@@ -111,8 +109,8 @@ function PListSelect {
 		# $count = 1 # Trash variable to track numbering
 		
 		if ($prompt) {
-			write-host -ForegroundColor Cyan $prompt
-			write-host ""
+			Write-Host -ForegroundColor Cyan $prompt
+			Write-Host ""
 		}
 		
 		for ($i = 0; $i -lt 25; $i++) {
@@ -121,62 +119,59 @@ function PListSelect {
 				break
 			}
 			
-			write-host -NoNewline ($i + $offset + 1); write-host -NoNewline ")`t"
+			Write-Host -NoNewline ($i + $offset + 1); Write-Host -NoNewline ")`t"
 			if ($select[($i + $offset)]) {
-				write-host -ForegroundColor Green (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-			}
-			else {
-				write-host (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+				Write-Host -ForegroundColor Green (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+			} else {
+				Write-Host (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 			}
 			if ($list[($i + $offset)].Length -gt 20) {
-				write-host "..." -NoNewLine # If more than 20 characters, adds ellipses
+				Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
 			}
 			
 			if ($list[($i + $offset + 25)]) {
 				# Checks to see if next column is needed; prints items 26-50 if they exist
-				write-host -NoNewLine "`t"
+				Write-Host -NoNewLine "`t"
 				if ($list[($i + $offset)].Length -lt 8) {
 					# These are to properly align everything in columns
-					write-host -NoNewline "`t"
+					Write-Host -NoNewline "`t"
 				}
 				if ($list[($i + $offset)].Length -lt 16) {
-					write-host -NoNewLine "`t"
+					Write-Host -NoNewLine "`t"
 				}
-				write-host -NoNewline ($i + $offset + 26); write-host -NoNewline ")`t"
+				Write-Host -NoNewline ($i + $offset + 26); Write-Host -NoNewline ")`t"
 				if ($select[($i + $offset + 25)]) {
-					write-host -ForegroundColor Green (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-				}
-				else {
-					write-host (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host -ForegroundColor Green (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+				} else {
+					Write-Host (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 25)].Length -gt 20) {
-					write-host "..." -NoNewLine # If more than 20 characters, adds ellipses
+					Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
 				}
 			}
 			
 			if ($list[($i + $offset + 50)]) {
 				# Checks to see if next column is needed; prints items 51-75 if they exist
-				write-host -NoNewLine "`t"
+				Write-Host -NoNewLine "`t"
 				if ($list[($i + $offset + 25)].Length -lt 8) {
 					# These are to properly align everything in columns
-					write-host -NoNewLine "`t"
+					Write-Host -NoNewLine "`t"
 				}
 				if ($list[($i + $offset + 25)].Length -lt 16) {
-					write-host -NoNewLine "`t"
+					Write-Host -NoNewLine "`t"
 				}
-				write-host -NoNewLine ($i + $offset + 51); write-host -NoNewLine ")`t"
+				Write-Host -NoNewLine ($i + $offset + 51); Write-Host -NoNewLine ")`t"
 				if ($select[($i + $offset + 50)]) {
-					write-host -ForegroundColor Green (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-				}
-				else {
-					write-host (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host -ForegroundColor Green (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+				} else {
+					Write-Host (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 50)].Length -gt 20) {
-					write-host "..." -NoNewLine # If more than 20 characters, adds ellipses
+					Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
 				}
 			}
 			
-			write-host ""
+			Write-Host ""
 		}
 		
 		#foreach ($i+$offset in $list)
@@ -193,25 +188,24 @@ function PListSelect {
 		#$count += 1
 		#}
 		
-		write-host -ForegroundColor Cyan "`r`nPlease select an item.  Selecting a highlighted item will deselect it.  Use 'A' to select all, or 'D' to deselect all.  Enter 'Y' when finished." -NoNewLine
+		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  Selecting a highlighted item will deselect it.  Use 'A' to select all, or 'D' to deselect all.  Enter 'Y' when finished." -NoNewLine
 		if ($limit) {
-			write-host -ForegroundColor Red "  Limit of $limit selections." -NoNewLine
+			Write-Host -ForegroundColor Red "  Limit of $limit selections." -NoNewLine
 		}
 		if ($list.Length -gt 75) {
-			write-host ""
+			Write-Host ""
 			if (($offset + 75) -lt $list.Length) {
-				write-host -ForegroundColor Cyan "Use 'N' to display the next page.  " -NoNewLine
+				Write-Host -ForegroundColor Cyan "Use 'N' to display the next page.  " -NoNewLine
 			}
 			if (($offset - 75) -ge 0) {
-				write-host -ForegroundColor Cyan "Use 'P' to display the previous page." -NoNewLine
+				Write-Host -ForegroundColor Cyan "Use 'P' to display the previous page." -NoNewLine
 			}
 		}
-		$x = read-host
+		$x = Read-Host
 		
 		try {
 			$x = [int]$x # Attempts to parse input to int.  Does nothing if input is not numerical.
-		}
-		catch [System.Management.Automation.PSInvalidCastException] {
+		} catch [System.Management.Automation.PSInvalidCastException] {
 		} # Prevent parse error from displaying.  It does not effect anything in the code.
 		
 		if ($x -match "^\d+$" -and $x -gt 0 -and $x -le $list.Length) {
@@ -220,49 +214,41 @@ function PListSelect {
 			if ($select[$x]) {
 				# If true set false, and vice versa
 				$select[$x] = $false
-			}
-			else {
+			} else {
 				if (($select | Where-Object -FilterScript {
 							$_ -eq $true
 						}).Count -lt $limit -or $limit -eq 0) {
 					$select[$x] = $true
-				}
-				else {
-					write-host -ForegroundColor Red "`r`nCan't make selection as it exceeds the set limit of $limit items.  Please press enter and deselect one before choosing another."
-					read-host | Out-Null
+				} else {
+					Write-Host -ForegroundColor Red "`r`nCan't make selection as it exceeds the set limit of $limit items.  Please press enter and deselect one before choosing another."
+					Read-Host | Out-Null
 				}
 			}
-		}
-		elseif ($x -eq 'd') {
+		} elseif ($x -eq 'd') {
 			# Deselect all
 			for ($i = 0; $i -lt $select.Length; $i++) {
 				$select[$i] = $false
 			}
-		}
-		elseif ($x -eq 'a') {
+		} elseif ($x -eq 'a') {
 			# Select all
 			if ($limit -ge $list.Length -or $limit -eq 0) {
 				for ($i = 0; $i -lt $select.Length; $i++) {
 					$select[$i] = $true
 				}
-			}
-			else {
-				write-host -ForegroundColor Red "`r`nCan't select all values as it exceeds the set limit of $limit items.  Please press enter and select individual values."
+			} else {
+				Write-Host -ForegroundColor Red "`r`nCan't select all values as it exceeds the set limit of $limit items.  Please press enter and select individual values."
 				Read-Host | Out-Null
 			}
-		}
-		elseif ($x -eq 'n') {
+		} elseif ($x -eq 'n') {
 			if (($offset + 75) -lt $list.Length) {
 				$offset += 75
 			}
-		}
-		elseif ($x -eq 'p') {
+		} elseif ($x -eq 'p') {
 			if (($offset - 75) -ge 0) {
 				$offset -= 75
 			}
-		}
-		elseif ($x -ne 'y') {
-			write-host -ForegroundColor Red "`r`nInput outside of available selection range.  Please press enter and try again."
+		} elseif ($x -ne 'y') {
+			Write-Host -ForegroundColor Red "`r`nInput outside of available selection range.  Please press enter and try again."
 			Read-Host | Out-Null
 		}
 	} while ($x -ne 'y') # Repeat until user keys Y
@@ -276,8 +262,7 @@ function PListSelect {
 	
 	if ($ret.Length -eq 0) {
 		return $null
-	}
- else {
+	} else {
 		return $ret # Output return array
 	}
 }
@@ -307,7 +292,7 @@ function PSelect {
 		if (!$pclear) {
 			Clear-Host
 		}
-		write-host -ForegroundColor Red "Input list is empty or missing.  Please check your function call."
+		Write-Host -ForegroundColor Red "Input list is empty or missing.  Please check your function call."
 		Read-Host | Out-Null
 		break
 	}
@@ -322,37 +307,35 @@ function PSelect {
 		
 		if ($prompt) {
 			# Print custom prompt if it exists, else print nothing
-			write-host ""
-			write-host -ForegroundColor Cyan $prompt
-			write-host ""
+			Write-Host ""
+			Write-Host -ForegroundColor Cyan $prompt
+			Write-Host ""
 		}
 		
 		foreach ($i in $list) {
 			# Print list of options with numbering
-			write-host -NoNewLine "$count)`t"
-			write-host $i
+			Write-Host -NoNewLine "$count)`t"
+			Write-Host $i
 			
 			$count += 1
 		}
 		
-		write-host "`r`n99)`tBack/Exit/Cancel"
+		Write-Host "`r`n99)`tBack/Exit/Cancel"
 		
-		write-host -ForegroundColor Cyan "`r`nPlease select an item.  " -NoNewLine
-		$x = read-host
+		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  " -NoNewLine
+		$x = Read-Host
 		
 		try {
 			$x = [int]$x
-		}
-		catch {
+		} catch {
 		}
 		
 		if ($x -match "^\d+$" -and (($x -gt 0 -and $x -le $list.Length) -or $x -eq 99)) {
 			# Make sure user input is number and within range
 			return ($x - 1) # Returns user input minus 1 so it matches proper array value
-		}
-		else {
+		} else {
 			# Error if invalid input
-			write-host -ForegroundColor Red "`r`nInvalid selection.  Please press enter and try again."
+			Write-Host -ForegroundColor Red "`r`nInvalid selection.  Please press enter and try again."
 			Read-Host | Out-Null
 		}
 	} while (!$check) # Repeat until correct input
@@ -368,16 +351,13 @@ function PDebug {
 	if ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftAlt)) {
 		if ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::D2) -or [System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::NumPad2)) {
 			Set-PSDebug -Trace 2
-		}
-		else {
+		} else {
 			Set-PSDebug -Trace 1
 		}
 		return $true
-	}
- elseif ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftCtrl)) {
+	} elseif ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftCtrl)) {
 		return $true
-	}
- else {
+	} else {
 		Set-PSDebug -Off
 		return $false
 	}
@@ -396,26 +376,24 @@ function PInput {
 	}
 	
 	do {
-		write-host $prompt
-		$var = read-host
+		Write-Host $prompt
+		$var = Read-Host
 		
 		if (($allownull -and $var.Length -eq 0) -or ($var.Length -eq $req -and $req -gt 0) -or $req -eq -1 -or ($req -eq 0 -and $var.Length -gt 0)) {
 			# if (null allowed and input null) (requirement exists and input matches requirement) (no requirement, so anything goes) (requirement is 0 so input not allowed, input exists and is not null)
 			return $var # If required conditions are met, return the input
-		}
-		elseif (!$var) {
-			write-host ""
+		} elseif (!$var) {
+			Write-Host ""
 			if (!$Script:pclear) {
 				Clear-Host
 			}
-			write-host -ForegroundColor Red "Input required.  Please try again.`r`n"
-		}
-		else {
-			write-host ""
+			Write-Host -ForegroundColor Red "Input required.  Please try again.`r`n"
+		} else {
+			Write-Host ""
 			if (!$Script:pclear) {
 				Clear-Host
 			}
-			write-host -ForegroundColor Red "Required length not met.  Please try again.`r`n"
+			Write-Host -ForegroundColor Red "Required length not met.  Please try again.`r`n"
 		}
 	} while (2 -lt 3) # Repeat indefinitely until return conditions are met
 }
@@ -510,8 +488,7 @@ filter Get-InstalledSoftware {
 					
 					try {
 						$baseKeys.Add($baseKey.OpenSubKey($name, $false))
-					}
-					catch {
+					} catch {
 						$errorRecord = [System.Management.Automation.ErrorRecord]::new(
 							$_.Exception.GetType()::new(
 								('Unable to access sub key {0} ({1})' -f $name, $_.Exception.InnerException.Message.Trim()),
@@ -525,8 +502,7 @@ filter Get-InstalledSoftware {
 					}
 				}
 			}
-		}
-		catch [Exception] {
+		} catch [Exception] {
 			Write-Error -ErrorRecord $_
 		}
 	}
@@ -536,14 +512,12 @@ filter Get-InstalledSoftware {
 		
 		if ($basekey.Name -eq 'HKEY_LOCAL_MACHINE') {
 			$username = 'LocalMachine'
-		}
-		else {
+		} else {
 			# Attempt to resolve a SID
 			try {
 				[System.Security.Principal.SecurityIdentifier]$sid = Split-Path $baseKey.Name -Leaf
 				$username = $sid.Translate([System.Security.Principal.NTAccount]).Value
-			}
-			catch {
+			} catch {
 				$username = Split-Path $baseKey.Name -Leaf
 			}
 		}
@@ -585,8 +559,7 @@ filter Get-InstalledSoftware {
 						}
 					}
 				}
-			}
-			catch {
+			} catch {
 				Write-Error -ErrorRecord $_
 			}
 		}
@@ -639,21 +612,21 @@ function Enable-PaschalEXCContacts {
 	}
 	
 	$contacthash = $userlist |
-	Where-Object {
-		$_.DistinguishedName -match "OU=Users" -or $_.Name -eq "CSR On Call"
-	} |
-	Select-PSFObject @(
-		"GivenName as FirstName"
-		"Surname as LastName"
-		"Name as DisplayName"
-		"Mobile as MobilePhone"
-		"TelephoneNumber as BusinessPhone"
-		"Mail as EmailAddress"
-		"SID as Mileage"
-		"Title"
-		"Department"
-	) |
-	ConvertTo-PSFHashtable -Include FirstName, LastName, BusinessPhone, MobilePhone, DisplayName, Department, Title, EmailAddress, Mileage
+		Where-Object {
+			$_.DistinguishedName -match "OU=Users" -or $_.Name -eq "CSR On Call"
+		} |
+		Select-PSFObject @(
+			"GivenName as FirstName"
+			"Surname as LastName"
+			"Name as DisplayName"
+			"Mobile as MobilePhone"
+			"TelephoneNumber as BusinessPhone"
+			"Mail as EmailAddress"
+			"SID as Mileage"
+			"Title"
+			"Department"
+		) |
+		ConvertTo-PSFHashtable -Include FirstName, LastName, BusinessPhone, MobilePhone, DisplayName, Department, Title, EmailAddress, Mileage
 	
 	Clear-Host
 	Write-Host -ForegroundColor White "# of Users to convert to Contacts - $($contacthash.Count)"
@@ -697,13 +670,11 @@ function Enable-PaschalEXCContacts {
 						$temp.Update("AutoResolve")
 						Write-Host -ForegroundColor Green "Set SID as Mileage property successfully!"
 						$success++
-					}
-					catch {
+					} catch {
 						Write-Host -ForegroundColor Red "Could not set SID as Mileage property..."
 						$SIDfailure++
 					}
-				}
-				catch {
+				} catch {
 					Write-Host -ForegroundColor Red "Contact creation failed for $($contact.DisplayName) -> $($targetUser.Mail)"
 					$totalfailure++
 				}
@@ -784,29 +755,28 @@ function Update-PaschalEXCContacts {
 				$_.DistinguishedName -notmatch "Terminated"
 			}
 		}
-	}
- else {
+	} else {
 		$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
 			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp"
 		}
 	}
 	
 	$contacthash = $userlist |
-	Where-Object {
-		$_.DistinguishedName -match "OU=Users" -or $_.SamAccountName -eq "csr-on-call"
-	} |
-	Select-PSFObject @(
-		"GivenName as FirstName"
-		"Surname as LastName"
-		"Name as DisplayName"
-		"Mobile as MobilePhone"
-		"TelephoneNumber as BusinessPhone"
-		"Mail as EmailAddress"
-		"SID as Mileage"
-		"Title"
-		"Department"
-	) |
-	ConvertTo-PSFHashtable -Include FirstName, LastName, BusinessPhone, MobilePhone, DisplayName, Department, Title, EmailAddress, Mileage
+		Where-Object {
+			$_.DistinguishedName -match "OU=Users" -or $_.SamAccountName -eq "csr-on-call"
+		} |
+		Select-PSFObject @(
+			"GivenName as FirstName"
+			"Surname as LastName"
+			"Name as DisplayName"
+			"Mobile as MobilePhone"
+			"TelephoneNumber as BusinessPhone"
+			"Mail as EmailAddress"
+			"SID as Mileage"
+			"Title"
+			"Department"
+		) |
+		ConvertTo-PSFHashtable -Include FirstName, LastName, BusinessPhone, MobilePhone, DisplayName, Department, Title, EmailAddress, Mileage
 	$emailtext = $null; $mailboxcount = 1;
 	
 	Clear-Host
@@ -828,8 +798,7 @@ Could not update Contacts
 Unable to locate Contacts on Exchange Mailbox
 
 "@
-		}
-		else {
+		} else {
 			foreach ($contact in $contacthash) {
 				$contactmatch = $null;
 				
@@ -873,20 +842,17 @@ Unable to locate Contacts on Exchange Mailbox
 							$temp.Mileage = $contact.Mileage
 							$temp.Update("AutoResolve")
 							Write-Host -ForegroundColor Green "Set SID as Mileage successfully"
-						}
-						catch {
+						} catch {
 							Write-Host -ForegroundColor Yellow "Could not set SID as Mileage"
 						}
 						$updatecount++
-					}
-					catch {
+					} catch {
 						Write-Host -ForegroundColor Red "Contact creation failed for missing contact - " -NoNewline
 						Write-Host -ForegroundColor White $contact.DisplayName
 						$updatefailed += "$($contact.DisplayName)(Creation)"
 					}
 					
-				}
-				else {
+				} else {
 					try {
 						$itemsupdated = @()
 						$contactmatch.Mileage = $contact.Mileage
@@ -914,8 +880,7 @@ Unable to locate Contacts on Exchange Mailbox
 						Write-Host -ForegroundColor Green " successfully."
 						
 						$updatecount++
-					}
-					catch {
+					} catch {
 						$updatefailed += "$($contactmatch.DisplayName)(Write)"
 					}
 				}
@@ -1060,8 +1025,7 @@ function Get-PaschalEXCContacts {
 					$_.CompanyName -match "AR01-PS"
 				}
 			}
-		}
-		catch {
+		} catch {
 			throw "Contacts could not be retrieved for Mailbox $MailboxName.`r`nPlease ensure you are inputting a valid Paschal email address and try again."
 		}
 	}
@@ -1104,8 +1068,7 @@ function Get-PaschalEXCContacts {
 	end {
 		if ($contacts) {
 			return $contacts
-		}
-		else {
+		} else {
 			Write-Host ""
 			Write-Host -ForegroundColor Red "No contact was found in Mailbox $MailboxName matching search criteria."
 			Write-Host -ForegroundColor Red "Please double check your search criteria and try again."
@@ -1117,6 +1080,17 @@ function Get-PaschalEXCContacts {
 
 
 function Update-PaschalFunctions {
+
+	<#
+	.SYNOPSIS
+		Pulls newest version of Paschal_Functions module and imports it.
+	.DESCRIPTION
+		Copies Paschal_Functions.psm1 and Paschal_Functions.psd1 from fileserver, removes current Paschal_Functions module, and imports new Paschal_Functions module.
+	.EXAMPLE
+		PS C:\> Update-PaschalFunctions
+		This function has no parameters.  When used, it will copy the newest version of Paschal_Functions and replace the existing module with the new version.
+	#>
+
 	[CmdletBinding()]
 	param ()
 	
@@ -1126,4 +1100,74 @@ function Update-PaschalFunctions {
 	Remove-Module Paschal_Functions
 	Import-Module Paschal_Functions -Global
 	
+}
+
+function Rename-PaschalComputer {
+	
+	<#
+	.SYNOPSIS
+		Renames target computer with a new name.
+	.DESCRIPTION
+		Renames target computer (ComputerName) with a new name (NewName) in Windows and Active Directory (if computer is on a domain).
+	.EXAMPLE
+		PS C:\> Rename-PaschalComputer -ComputerName $currentName -NewName $newName -Credentials $myCred
+		Renames the computer detailed in $currentName to the name detailed in $newName.
+
+	.EXAMPLE
+		PS C:\> Rename-PaschalComputer -ComputerName $currentName -NewName $newName -Restart
+		Prompts the user for credentials since none were passed via parameter, then renames the computer detailed in $currentName to the name detailed in $newName, then restarts the target computer.
+
+	.PARAMETER ComputerName
+		(Required) Full name of computer to be renamed.
+
+	.PARAMETER NewName
+		(Optional) Full name for computer to be renamed to.
+
+	.PARAMETER Restart
+		(Optional) Defaults to false.  If true, will restart the target computer after rename.
+
+	.PARAMETER Credentials
+		(Optional) Credentials with privileges to make changes on the current domain.
+
+	#>
+
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$ComputerName,
+
+		[Parameter()]
+		[string]$NewName = (Read-Host -Prompt "Please input the New Name for $ComputerName."),
+
+		[Parameter()]
+		[switch]$Restart,
+
+		[Parameter()]
+		[PSCredential]$Credentials
+	)
+
+	$splat = @{
+		ComputerName     = $ComputerName
+		NewName          = $NewName
+		Restart          = $Restart
+		DomainCredential = $Credentials
+	}
+
+	Write-Host ""
+	Write-Host -ForegroundColor White "Renaming $ComputerName to $NewName.  Is this correct?"
+	$confirm = Read-Host -Prompt "(Y/N)"
+
+	if ($confirm -ne "y") {
+		Write-Host ""
+		Write-Host "Rename canceled.  Computer Name will remain $ComputerName."
+		return
+	} else {
+		try {
+			Rename-Computer @splat
+		} catch {
+			Write-Host ""
+			Write-Host -ForegroundColor Red "Rename failed.  Computer Name will remain $ComputerName."
+		}
+	}
+
 }
