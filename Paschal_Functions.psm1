@@ -32,12 +32,14 @@ function PSleep([int]$seconds, [string]$action, [string]$description) {
 
 function PPS([string]$computer) {
 	if ($computer) {
-	} else {
+	}
+ else {
 		$computer = (Read-Host -Prompt `n'Computer to connect to?')
 	}
 	if ($env:username -match '.+?\-adm$' -or $env:username -match 'srv') {
 		Enter-PSSession -ComputerName $computer -Credential (Get-Credential $env:username)
-	} else {
+	}
+ else {
 		Enter-PSSession -ComputerName $computer -Credential (Get-Credential "$($env:username)-adm")
 	}
 }
@@ -55,8 +57,8 @@ function ADSync {
 	Write-Host ""
 }
 
-function PListSelect # Must pass in array of Strings!  Function returns an array with the selected strings.  Format - PListSelect [String Array] [Limit]
-{
+function PListSelect {
+ # Must pass in array of Strings!  Function returns an array with the selected strings.  Format - PListSelect [String Array] [Limit]
 	<#
         .Synopsis
         Select one or more items from a list of options.
@@ -79,7 +81,7 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 	
 	[Alias("pls")]
 	param ([parameter(Mandatory = $true)]
-		[string[]]$list = @(),
+		[string[]]$list,
 		
 		[int]$limit = 0,
 		
@@ -106,15 +108,15 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 		if (!$pclear) {
 			Clear-Host
 		}
-		$count = 1 # Trash variable to track numbering
+		# $count = 1 # Trash variable to track numbering
 		
 		if ($prompt) {
 			write-host -ForegroundColor Cyan $prompt
 			write-host ""
 		}
 		
-		for ($i = 0; $i -lt 25; $i++) # Write out options in columns of 15
-{
+		for ($i = 0; $i -lt 25; $i++) {
+			# Write out options in columns of 15
 			if (!$list[($i + $offset)]) {
 				break
 			}
@@ -122,18 +124,19 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 			write-host -NoNewline ($i + $offset + 1); write-host -NoNewline ")`t"
 			if ($select[($i + $offset)]) {
 				write-host -ForegroundColor Green (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-			} else {
+			}
+			else {
 				write-host (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 			}
 			if ($list[($i + $offset)].Length -gt 20) {
 				write-host "..." -NoNewLine # If more than 20 characters, adds ellipses
 			}
 			
-			if ($list[($i + $offset + 25)]) # Checks to see if next column is needed; prints items 26-50 if they exist
-{
+			if ($list[($i + $offset + 25)]) {
+				# Checks to see if next column is needed; prints items 26-50 if they exist
 				write-host -NoNewLine "`t"
-				if ($list[($i + $offset)].Length -lt 8) # These are to properly align everything in columns
-{
+				if ($list[($i + $offset)].Length -lt 8) {
+					# These are to properly align everything in columns
 					write-host -NoNewline "`t"
 				}
 				if ($list[($i + $offset)].Length -lt 16) {
@@ -142,7 +145,8 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 				write-host -NoNewline ($i + $offset + 26); write-host -NoNewline ")`t"
 				if ($select[($i + $offset + 25)]) {
 					write-host -ForegroundColor Green (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-				} else {
+				}
+				else {
 					write-host (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 25)].Length -gt 20) {
@@ -150,11 +154,11 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 				}
 			}
 			
-			if ($list[($i + $offset + 50)]) # Checks to see if next column is needed; prints items 51-75 if they exist
-{
+			if ($list[($i + $offset + 50)]) {
+				# Checks to see if next column is needed; prints items 51-75 if they exist
 				write-host -NoNewLine "`t"
-				if ($list[($i + $offset + 25)].Length -lt 8) # These are to properly align everything in columns
-{
+				if ($list[($i + $offset + 25)].Length -lt 8) {
+					# These are to properly align everything in columns
 					write-host -NoNewLine "`t"
 				}
 				if ($list[($i + $offset + 25)].Length -lt 16) {
@@ -163,7 +167,8 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 				write-host -NoNewLine ($i + $offset + 51); write-host -NoNewLine ")`t"
 				if ($select[($i + $offset + 50)]) {
 					write-host -ForegroundColor Green (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
-				} else {
+				}
+				else {
 					write-host (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 50)].Length -gt 20) {
@@ -205,56 +210,65 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 		
 		try {
 			$x = [int]$x # Attempts to parse input to int.  Does nothing if input is not numerical.
-		} catch [System.Management.Automation.PSInvalidCastException] {
+		}
+		catch [System.Management.Automation.PSInvalidCastException] {
 		} # Prevent parse error from displaying.  It does not effect anything in the code.
 		
 		if ($x -match "^\d+$" -and $x -gt 0 -and $x -le $list.Length) {
 			$x -= 1 # Make variable match array values
 			
-			if ($select[$x]) # If true set false, and vice versa
-{
+			if ($select[$x]) {
+				# If true set false, and vice versa
 				$select[$x] = $false
-			} else {
+			}
+			else {
 				if (($select | Where-Object -FilterScript {
 							$_ -eq $true
 						}).Count -lt $limit -or $limit -eq 0) {
 					$select[$x] = $true
-				} else {
+				}
+				else {
 					write-host -ForegroundColor Red "`r`nCan't make selection as it exceeds the set limit of $limit items.  Please press enter and deselect one before choosing another."
-					$dump = read-host
+					read-host | Out-Null
 				}
 			}
-		} elseif ($x -eq 'd') # Deselect all
-{
+		}
+		elseif ($x -eq 'd') {
+			# Deselect all
 			for ($i = 0; $i -lt $select.Length; $i++) {
 				$select[$i] = $false
 			}
-		} elseif ($x -eq 'a') # Select all
-{
+		}
+		elseif ($x -eq 'a') {
+			# Select all
 			if ($limit -ge $list.Length -or $limit -eq 0) {
 				for ($i = 0; $i -lt $select.Length; $i++) {
 					$select[$i] = $true
 				}
-			} else {
-				write-host -ForegroundColor Red "`r`nCan't select all values as it exceeds the set limit of $limit items.  Please press enter and select individual values."
-				$dump = read-host
 			}
-		} elseif ($x -eq 'n') {
+			else {
+				write-host -ForegroundColor Red "`r`nCan't select all values as it exceeds the set limit of $limit items.  Please press enter and select individual values."
+				Read-Host | Out-Null
+			}
+		}
+		elseif ($x -eq 'n') {
 			if (($offset + 75) -lt $list.Length) {
 				$offset += 75
 			}
-		} elseif ($x -eq 'p') {
+		}
+		elseif ($x -eq 'p') {
 			if (($offset - 75) -ge 0) {
 				$offset -= 75
 			}
-		} elseif ($x -ne 'y') {
+		}
+		elseif ($x -ne 'y') {
 			write-host -ForegroundColor Red "`r`nInput outside of available selection range.  Please press enter and try again."
-			$dump = read-host
+			Read-Host | Out-Null
 		}
 	} while ($x -ne 'y') # Repeat until user keys Y
 	
-	for ($i = 0; $i -lt $select.Length; $i++) # Fill return array with selected strings
-{
+	for ($i = 0; $i -lt $select.Length; $i++) {
+		# Fill return array with selected strings
 		if ($select[$i] -and $list[$i] -and $i -lt $list.Length) {
 			$ret += $list[$i]
 		}
@@ -262,7 +276,8 @@ function PListSelect # Must pass in array of Strings!  Function returns an array
 	
 	if ($ret.Length -eq 0) {
 		return $null
-	} else {
+	}
+ else {
 		return $ret # Output return array
 	}
 }
@@ -281,19 +296,19 @@ function PSelect {
 	
 	[Alias("psel")]
 	param ([parameter(Mandatory = $true)]
-		[string[]]$list = @(),
+		[string[]]$list,
 		
 		[string]$prompt = $null,
 		
 		[boolean]$pclear = $false)
 	
-	if ($list.Length -le 0) # Check that array exists and isn't empty
-{
+	if ($list.Length -le 0) {
+		# Check that array exists and isn't empty
 		if (!$pclear) {
 			Clear-Host
 		}
 		write-host -ForegroundColor Red "Input list is empty or missing.  Please check your function call."
-		$dump = read-host
+		Read-Host | Out-Null
 		break
 	}
 	
@@ -305,15 +320,15 @@ function PSelect {
 		}
 		$count = 1
 		
-		if ($prompt) # Print custom prompt if it exists, else print nothing
-{
+		if ($prompt) {
+			# Print custom prompt if it exists, else print nothing
 			write-host ""
 			write-host -ForegroundColor Cyan $prompt
 			write-host ""
 		}
 		
-		foreach ($i in $list) # Print list of options with numbering
-{
+		foreach ($i in $list) {
+			# Print list of options with numbering
 			write-host -NoNewLine "$count)`t"
 			write-host $i
 			
@@ -327,16 +342,18 @@ function PSelect {
 		
 		try {
 			$x = [int]$x
-		} catch {
+		}
+		catch {
 		}
 		
-		if ($x -match "^\d+$" -and (($x -gt 0 -and $x -le $list.Length) -or $x -eq 99)) # Make sure user input is number and within range
-{
+		if ($x -match "^\d+$" -and (($x -gt 0 -and $x -le $list.Length) -or $x -eq 99)) {
+			# Make sure user input is number and within range
 			return ($x - 1) # Returns user input minus 1 so it matches proper array value
-		} else # Error if invalid input
-{
+		}
+		else {
+			# Error if invalid input
 			write-host -ForegroundColor Red "`r`nInvalid selection.  Please press enter and try again."
-			$dump = read-host
+			Read-Host | Out-Null
 		}
 	} while (!$check) # Repeat until correct input
 }
@@ -351,13 +368,16 @@ function PDebug {
 	if ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftAlt)) {
 		if ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::D2) -or [System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::NumPad2)) {
 			Set-PSDebug -Trace 2
-		} else {
+		}
+		else {
 			Set-PSDebug -Trace 1
 		}
 		return $true
-	} elseif ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftCtrl)) {
+	}
+ elseif ([System.Windows.Input.Keyboard]::IsKeyDown([System.Windows.Input.Key]::LeftCtrl)) {
 		return $true
-	} else {
+	}
+ else {
 		Set-PSDebug -Off
 		return $false
 	}
@@ -365,7 +385,7 @@ function PDebug {
 
 function PInput {
 	param ([parameter(Mandatory = $true)]
-		[string]$prompt = $null,
+		[string]$prompt,
 		
 		[int]$req = -1,
 		
@@ -379,16 +399,18 @@ function PInput {
 		write-host $prompt
 		$var = read-host
 		
-		if (($allownull -and $var.Length -eq 0) -or ($var.Length -eq $req -and $req -gt 0) -or $req -eq -1 -or ($req -eq 0 -and $var.Length -gt 0)) # if (null allowed and input null) (requirement exists and input matches requirement) (no requirement, so anything goes) (requirement is 0 so input not allowed, input exists and is not null)
-{
+		if (($allownull -and $var.Length -eq 0) -or ($var.Length -eq $req -and $req -gt 0) -or $req -eq -1 -or ($req -eq 0 -and $var.Length -gt 0)) {
+			# if (null allowed and input null) (requirement exists and input matches requirement) (no requirement, so anything goes) (requirement is 0 so input not allowed, input exists and is not null)
 			return $var # If required conditions are met, return the input
-		} elseif (!$var) {
+		}
+		elseif (!$var) {
 			write-host ""
 			if (!$Script:pclear) {
 				Clear-Host
 			}
 			write-host -ForegroundColor Red "Input required.  Please try again.`r`n"
-		} else {
+		}
+		else {
 			write-host ""
 			if (!$Script:pclear) {
 				Clear-Host
@@ -406,9 +428,9 @@ function PTitle {
 	$Host.UI.RawUI.WindowTitle = "$title v$version"
 }
 
-filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
-{
-    <#
+filter Get-InstalledSoftware {
+ ## Courtesy of Chris Dent, Powershell Guru
+	<#
     .SYNOPSIS
         Get all installed from the Uninstall keys in the registry.
     .DESCRIPTION
@@ -488,7 +510,8 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 					
 					try {
 						$baseKeys.Add($baseKey.OpenSubKey($name, $false))
-					} catch {
+					}
+					catch {
 						$errorRecord = [System.Management.Automation.ErrorRecord]::new(
 							$_.Exception.GetType()::new(
 								('Unable to access sub key {0} ({1})' -f $name, $_.Exception.InnerException.Message.Trim()),
@@ -502,7 +525,8 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 					}
 				}
 			}
-		} catch [Exception] {
+		}
+		catch [Exception] {
 			Write-Error -ErrorRecord $_
 		}
 	}
@@ -512,12 +536,14 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 		
 		if ($basekey.Name -eq 'HKEY_LOCAL_MACHINE') {
 			$username = 'LocalMachine'
-		} else {
+		}
+		else {
 			# Attempt to resolve a SID
 			try {
 				[System.Security.Principal.SecurityIdentifier]$sid = Split-Path $baseKey.Name -Leaf
 				$username = $sid.Translate([System.Security.Principal.NTAccount]).Value
-			} catch {
+			}
+			catch {
 				$username = Split-Path $baseKey.Name -Leaf
 			}
 		}
@@ -542,24 +568,25 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 						}
 						
 						[PSCustomObject]@{
-							Name	    = $name
-							DisplayName = $packageKey.GetValue('DisplayName')
-							DisplayVersion = $packageKey.GetValue('DisplayVersion')
-							InstallDate = $installDate
+							Name            = $name
+							DisplayName     = $packageKey.GetValue('DisplayName')
+							DisplayVersion  = $packageKey.GetValue('DisplayVersion')
+							InstallDate     = $installDate
 							InstallLocation = $packageKey.GetValue('InstallLocation')
-							HelpLink    = $packageKey.GetValue('HelpLink')
-							Publisher   = $packageKey.GetValue('Publisher')
+							HelpLink        = $packageKey.GetValue('HelpLink')
+							Publisher       = $packageKey.GetValue('Publisher')
 							UninstallString = $packageKey.GetValue('UninstallString')
-							URLInfoAbout = $packageKey.GetValue('URLInfoAbout')
-							Is64Bit	    = $is64Bit
-							Hive	    = $baseKey.Name
-							Path	    = Join-Path $key $name
-							Username    = $username
-							ComputerName = $ComputerName
+							URLInfoAbout    = $packageKey.GetValue('URLInfoAbout')
+							Is64Bit         = $is64Bit
+							Hive            = $baseKey.Name
+							Path            = Join-Path $key $name
+							Username        = $username
+							ComputerName    = $ComputerName
 						}
 					}
 				}
-			} catch {
+			}
+			catch {
 				Write-Error -ErrorRecord $_
 			}
 		}
@@ -572,7 +599,7 @@ filter Get-InstalledSoftware ## Courtesy of Chris Dent, Powershell Guru
 }
 
 function Enable-PaschalEXCContacts {
-<#
+	<#
 	.SYNOPSIS
 		Adds all existing Paschal contacts to a specified Exchange mailbox.
 	
@@ -670,11 +697,13 @@ function Enable-PaschalEXCContacts {
 						$temp.Update("AutoResolve")
 						Write-Host -ForegroundColor Green "Set SID as Mileage property successfully!"
 						$success++
-					} catch {
+					}
+					catch {
 						Write-Host -ForegroundColor Red "Could not set SID as Mileage property..."
 						$SIDfailure++
 					}
-				} catch {
+				}
+				catch {
 					Write-Host -ForegroundColor Red "Contact creation failed for $($contact.DisplayName) -> $($targetUser.Mail)"
 					$totalfailure++
 				}
@@ -696,7 +725,7 @@ function Enable-PaschalEXCContacts {
 }
 
 function Update-PaschalEXCContacts {
-<#
+	<#
 	.SYNOPSIS
 		Updates Paschal controlled properties of Paschal contacts on all company phones.
 	
@@ -726,7 +755,7 @@ function Update-PaschalEXCContacts {
 	param
 	(
 		[Parameter(Mandatory = $false,
-				   ValueFromPipeline = $true)]
+			ValueFromPipeline = $true)]
 		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
 		[string[]]$TargetMailboxes = @((Get-ADUser -Filter * -SearchBase "OU=Users, OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mail, Mobile | Where-Object {
 					$_.Mobile
@@ -755,7 +784,8 @@ function Update-PaschalEXCContacts {
 				$_.DistinguishedName -notmatch "Terminated"
 			}
 		}
-	} else {
+	}
+ else {
 		$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
 			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp"
 		}
@@ -798,7 +828,8 @@ Could not update Contacts
 Unable to locate Contacts on Exchange Mailbox
 
 "@
-		} else {
+		}
+		else {
 			foreach ($contact in $contacthash) {
 				$contactmatch = $null;
 				
@@ -842,17 +873,20 @@ Unable to locate Contacts on Exchange Mailbox
 							$temp.Mileage = $contact.Mileage
 							$temp.Update("AutoResolve")
 							Write-Host -ForegroundColor Green "Set SID as Mileage successfully"
-						} catch {
+						}
+						catch {
 							Write-Host -ForegroundColor Yellow "Could not set SID as Mileage"
 						}
 						$updatecount++
-					} catch {
+					}
+					catch {
 						Write-Host -ForegroundColor Red "Contact creation failed for missing contact - " -NoNewline
 						Write-Host -ForegroundColor White $contact.DisplayName
 						$updatefailed += "$($contact.DisplayName)(Creation)"
 					}
 					
-				} else {
+				}
+				else {
 					try {
 						$itemsupdated = @()
 						$contactmatch.Mileage = $contact.Mileage
@@ -880,7 +914,8 @@ Unable to locate Contacts on Exchange Mailbox
 						Write-Host -ForegroundColor Green " successfully."
 						
 						$updatecount++
-					} catch {
+					}
+					catch {
 						$updatefailed += "$($contactmatch.DisplayName)(Write)"
 					}
 				}
@@ -924,7 +959,7 @@ $($updatefailed -join "`r`n")
 
 
 function Get-PaschalEXCContacts {
-<#
+	<#
 	.SYNOPSIS
 		Retrieves contacts from an Exchange mailbox within the Paschal domain.
 	
@@ -972,19 +1007,19 @@ function Get-PaschalEXCContacts {
 	param
 	(
 		[Parameter(ParameterSetName = 'EmailAddress',
-				   Mandatory = $true,
-				   ValueFromPipeline = $true,
-				   Position = 1)]
+			Mandatory = $true,
+			ValueFromPipeline = $true,
+			Position = 1)]
 		[Parameter(ParameterSetName = 'FirstLastName',
-				   Mandatory = $true,
-				   ValueFromPipeline = $true,
-				   Position = 1)]
+			Mandatory = $true,
+			ValueFromPipeline = $true,
+			Position = 1)]
 		[Parameter(ParameterSetName = 'DisplayName',
-				   Mandatory = $true,
-				   ValueFromPipeline = $true,
-				   Position = 1)]
+			Mandatory = $true,
+			ValueFromPipeline = $true,
+			Position = 1)]
 		[Parameter(ParameterSetName = 'Default',
-				   Position = 1)]
+			Position = 1)]
 		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
 		[string]$MailboxName,
 		
@@ -995,19 +1030,19 @@ function Get-PaschalEXCContacts {
 		[pscredential]$Credentials = (Get-Credential srv),
 		
 		[Parameter(ParameterSetName = 'EmailAddress',
-				   Position = 2)]
+			Position = 2)]
 		[string]$EmailAddress,
 		
 		[Parameter(ParameterSetName = 'FirstLastName',
-				   Position = 2)]
+			Position = 2)]
 		[string]$FirstName,
 		
 		[Parameter(ParameterSetName = 'FirstLastName',
-				   Position = 3)]
+			Position = 3)]
 		[string]$LastName,
 		
 		[Parameter(ParameterSetName = 'DisplayName',
-				   Position = 2)]
+			Position = 2)]
 		[string]$DisplayName,
 		
 		[Parameter(ParameterSetName = 'EmailAddress')]
@@ -1025,7 +1060,8 @@ function Get-PaschalEXCContacts {
 					$_.CompanyName -match "AR01-PS"
 				}
 			}
-		} catch {
+		}
+		catch {
 			throw "Contacts could not be retrieved for Mailbox $MailboxName.`r`nPlease ensure you are inputting a valid Paschal email address and try again."
 		}
 	}
@@ -1068,7 +1104,8 @@ function Get-PaschalEXCContacts {
 	end {
 		if ($contacts) {
 			return $contacts
-		} else {
+		}
+		else {
 			Write-Host ""
 			Write-Host -ForegroundColor Red "No contact was found in Mailbox $MailboxName matching search criteria."
 			Write-Host -ForegroundColor Red "Please double check your search criteria and try again."
