@@ -1133,11 +1133,11 @@ function Rename-PaschalComputer {
 
 	[CmdletBinding()]
 	param(
-		[Parameter(Mandatory = $true)]
+		[Parameter()]
 		[string]$ComputerName,
 
 		[Parameter()]
-		[string]$NewName = (Read-Host -Prompt "Please input the New Name for $ComputerName."),
+		[string]$NewName,
 
 		[Parameter()]
 		[switch]$Restart,
@@ -1145,6 +1145,43 @@ function Rename-PaschalComputer {
 		[Parameter()]
 		[PSCredential]$Credentials
 	)
+
+	if (-not $ComputerName) {
+		$ComputerName = Read-Host -Prompt "Please input the name of the Target Computer, if different from $env:COMPUTERNAME"
+		if (-not $ComputerName) {
+			$ComputerName = $env:COMPUTERNAME
+		}
+	}
+
+	if (-not $NewName) {
+		$NewName = Read-Host -Prompt "Please input the New Name for $ComputerName"
+	}
+
+	if ($Credentials -isnot [pscredential]) {
+		if (-not $Credentials) {
+			$Credentials = Get-Credential
+		} else {
+			$Credentials = Get-Credential $Credentials
+		}
+	}
+
+	Invoke-Command -ComputerName WDC01V -Credential $Credentials -ScriptBlock {
+		if (-not (Get-ADComputer -Identity $args[0] -Properties MemberOf).MemberOf -match "CN=Weekly-Reboot,OU=ComputersGroups,OU=Groups,OU=Springdale,DC=US,DC=PaschalCorp,DC=com") {
+			Add-ADPrincipalGroupMembership -Identity $args[0] -MemberOf "CN=Weekly-Reboot,OU=ComputersGroups,OU=Groups,OU=Springdale,DC=US,DC=PaschalCorp,DC=com" -Confirm:$false
+		}
+	} -ArgumentList $ComputerName
+
+	if ((Read-Host -Prompt "Remove computer from Weekly-Reboot AD Group?") -eq 'y') {
+		Invoke-Command -ComputerName WDC01V -Credential $Credentials -ScriptBlock {
+			Remove-ADPrincipalGroupMembership -Identity $args[0] -MemberOf "CN=Weekly-Reboot,OU=ComputersGroups,OU=Groups,OU=Springdale,DC=US,DC=PaschalCorp,DC=com" -Confirm:$false -ErrorAction SilentlyContinue
+		} -ArgumentList $ComputerName
+	}
+
+	if (-not $Restart) {
+		if ((Read-Host -Prompt "Restart Target Computer when rename is complete?") -eq 'y') {
+			$Restart = $true
+		}
+	}
 
 	$splat = @{
 		ComputerName     = $ComputerName
