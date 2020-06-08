@@ -607,18 +607,18 @@ function Enable-PaschalEXCContacts {
 	}
 	Import-Module PSFramework
 	
-	$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
-		$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp"
+	$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties DisplayName, Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
+		$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp" -or $_.SamAccountName -eq "warehousenight"
 	}
 	
 	$contacthash = $userlist |
 		Where-Object {
-			$_.DistinguishedName -match "OU=Users" -or $_.Name -eq "CSR On Call"
+			$_.DistinguishedName -match "OU=Users" -or $_.Name -eq "CSR On Call" -or $_.SamAccountName -eq "warehousenight"
 		} |
 		Select-PSFObject @(
 			"GivenName as FirstName"
 			"Surname as LastName"
-			"Name as DisplayName"
+			"DisplayName"
 			"Mobile as MobilePhone"
 			"TelephoneNumber as BusinessPhone"
 			"Mail as EmailAddress"
@@ -656,11 +656,12 @@ function Enable-PaschalEXCContacts {
 				Write-Host ""
 				
 				try {
+					# 
 					New-EXCContact -MailboxName $targetUser.Mail -MailboxOwnerDistinguishedName $targetUser.DistinguishedName -FirstName $contact.FirstName -LastName $contact.LastName -DisplayName $contact.DisplayName -BusinessPhone $contact.BusinessPhone -MobilePhone $contact.MobilePhone -EmailAddress $contact.EmailAddress -Department $contact.Department -JobTitle $contact.Title -CompanyName "Paschal Air, Plumbing & Electric - AR01-PS" -Credentials $exchcred -useImpersonation
 					Write-Host -ForegroundColor Green "Complete!"
 					# Start-Sleep -Seconds 1
 					Write-Host -ForegroundColor Yellow "Retrieving Contact..."
-					$temp = Get-EXCContacts -MailboxName $targetUser.Mail -Credentials $exchcred -useImpersonation | Where-Object {
+					$temp = Get-PaschalEXCContacts -MailboxName $targetUser.Mail -Credentials $exchcred | Where-Object {
 						$_.DisplayName -eq $contact.DisplayName
 					}
 					Write-Host -ForegroundColor Yellow "Setting SID as Mileage property..."
@@ -730,13 +731,16 @@ function Update-PaschalEXCContacts {
 		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
 		[string[]]$TargetMailboxes = @((Get-ADUser -Filter * -SearchBase "OU=Users, OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mail, Mobile | Where-Object {
 					$_.Mobile
-				}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail),
+				}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail + (get-aduser -Identity warehousenight -Properties Mail).Mail),
 		
 		[Parameter(Mandatory = $false)]
 		[PSCredential]$Credentials = (Get-Credential srv),
 		
 		[Parameter(Mandatory = $false)]
-		[string[]]$TargetContacts
+		[string[]]$TargetContacts,
+
+		[Parameter(Mandatory = $false)]
+		[switch]$NoEmail
 	)
 	
 	$ErrorActionPreference = 'Continue'
@@ -751,24 +755,24 @@ function Update-PaschalEXCContacts {
 	
 	if ($TargetContacts) {
 		$userlist = $TargetContacts | ForEach-Object {
-			Get-ADUser -Filter "ANR -eq '$_'" -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
+			Get-ADUser -Filter "ANR -eq '$_'" -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties DisplayName, Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
 				$_.DistinguishedName -notmatch "Terminated"
 			}
 		}
 	} else {
-		$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
-			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp"
+		$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties DisplayName, Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
+			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp" -or $_.SamAccountName -eq "warehousenight"
 		}
 	}
 	
 	$contacthash = $userlist |
 		Where-Object {
-			$_.DistinguishedName -match "OU=Users" -or $_.SamAccountName -eq "csr-on-call"
+			$_.DistinguishedName -match "OU=Users" -or $_.SamAccountName -eq "csr-on-call" -or $_.SamAccountName -eq "warehousenight"
 		} |
 		Select-PSFObject @(
 			"GivenName as FirstName"
 			"Surname as LastName"
-			"Name as DisplayName"
+			"DisplayName"
 			"Mobile as MobilePhone"
 			"TelephoneNumber as BusinessPhone"
 			"Mail as EmailAddress"
@@ -832,7 +836,8 @@ Unable to locate Contacts on Exchange Mailbox
 				
 				if (-not $contactmatch) {
 					try {
-						New-EXCContact -MailboxName $mailbox -MailboxOwnerDistinguishedName (Get-ADUser -Filter "ANR -eq '$mailbox'").DistinguishedName -FirstName $contact.FirstName -LastName $contact.LastName -DisplayName $contact.DisplayName -BusinessPhone $contact.BusinessPhone -MobilePhone $contact.MobilePhone -EmailAddress $contact.EmailAddress -Department $contact.Department -JobTitle $contact.Title -CompanyName "Paschal Air, Plumbing & Electric - AR01-PS" -Credentials $exchcred -useImpersonation
+						# -MailboxOwnerDistinguishedName (Get-ADUser -Filter "ANR -eq '$mailbox'").DistinguishedName
+						New-EXCContact -MailboxName $mailbox -FirstName $contact.FirstName -LastName $contact.LastName -DisplayName $contact.DisplayName -BusinssPhone $contact.BusinessPhone -MobilePhone $contact.MobilePhone -EmailAddress $contact.EmailAddress -Department $contact.Department -JobTitle $contact.Title -CompanyName "Paschal Air, Plumbing & Electric - AR01-PS" -Credentials $exchcred -useImpersonation
 						Write-Host -ForegroundColor Green "Missing contact found - " -NoNewline
 						Write-Host -ForegroundColor White $($contact.DisplayName) -NoNewline
 						Write-Host -ForegroundColor Green " - Created Successfully"
@@ -854,29 +859,52 @@ Unable to locate Contacts on Exchange Mailbox
 					
 				} else {
 					try {
-						$itemsupdated = @()
-						$contactmatch.Mileage = $contact.Mileage
-						$itemsupdated += "SID"
-						$contactmatch.DisplayName = $contact.DisplayName
-						$itemsupdated += "DisplayName"
-						if ($contact.MobilePhone) {
+						$itemsupdated = @(); $itemsvalidated = @()
+						if ($contactmatch.Mileage -eq $contact.Mileage) {
+							$itemsvalidated += "SID"
+						} else {
+							$contactmatch.Mileage = $contact.Mileage
+							$itemsupdated += "SID"
+						}
+						if ($contactmatch.DisplayName -eq $contact.DisplayName) {
+							$itemsvalidated += "DisplayName"
+						} else {
+							$contactmatch.DisplayName = $contact.DisplayName
+							$itemsupdated += "DisplayName"
+						}
+						if ($contact.MobilePhone -and $contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] -eq $contact.MobilePhone) {
+							$itemsvalidated += "MobilePhone"
+						} elseif ($contact.MobilePhone) {
 							$contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] = $contact.MobilePhone
 							$itemsupdated += "MobilePhone"
 						}
-						if ($contact.BusinessPhone) {
+						if ($contact.BusinessPhone -and $contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::BusinessPhone] -eq $contact.BusinessPhone) {
+							$itemsvalidated += "BusinessPhone"
+						} elseif ($contact.BusinessPhone) {
 							$contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::BusinessPhone] = $contact.BusinessPhone
 							$itemsupdated += "BusinessPhone"
 						}
-						if ($contact.EmailAddress) {
+						if ($contact.EmailAddress -and $contactmatch.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1].Address -eq $contact.EmailAddress) {
+							$itemsvalidated += "EmailAddress"
+						} elseif ($contact.EmailAddress) {
 							$contactmatch.EmailAddresses[[Microsoft.Exchange.WebServices.Data.EmailAddressKey]::EmailAddress1] = $contact.EmailAddress
 							$itemsupdated += "EmailAddress"
 						}
 						$contactmatch.Update("AutoResolve")
 						
 						Write-Host -ForegroundColor Green "Contact " -NoNewline
-						Write-Host -ForegroundColor White $($contactmatch.DisplayName) -NoNewline
-						Write-Host -ForegroundColor Green " updated " -NoNewline
-						Write-Host -ForegroundColor White "$($itemsupdated -join ', ')" -NoNewline
+						Write-Host -ForegroundColor White $contactmatch.DisplayName -NoNewline
+						if ($itemsvalidated) {
+							Write-Host -ForegroundColor Green " validated " -NoNewline
+							Write-Host -ForegroundColor White "$($itemsvalidated -join ', ')" -NoNewline
+						}
+						if ($itemsvalidated -and $itemsupdated) {
+							Write-Host -ForegroundColor White "," -NoNewline
+						}
+						if ($itemsupdated) {
+							Write-Host -ForegroundColor Yellow " updated " -NoNewline
+							Write-Host -ForegroundColor White "$($itemsupdated -join ', ')" -NoNewline
+						}
 						Write-Host -ForegroundColor Green " successfully."
 						
 						$updatecount++
@@ -893,9 +921,9 @@ Unable to locate Contacts on Exchange Mailbox
 			Write-Host -ForegroundColor White '-' -NoNewline
 		}
 		Write-Host ""; Write-Host ""
-		Write-Host -ForegroundColor Green "Successful updates - $updatecount"
+		Write-Host -ForegroundColor Green "Contacts successfully validated - $updatecount"
 		if ($updatefailed) {
-			Write-Host -ForegroundColor Red "Failed updates - $($updatefailed -join ', ')"
+			Write-Host -ForegroundColor Red "Contacts failed to validate - $($updatefailed -join ', ')"
 		}
 		Write-Host -ForegroundColor White "Total Contacts attempted - $($updatecount + $updatefailed.Count)"
 		Write-Host ""
@@ -903,7 +931,7 @@ Unable to locate Contacts on Exchange Mailbox
 		$emailtext += @"
 
 	$mailbox ($mailboxcount of $($TargetMailboxes.Count))
-	Contacts Updated Successfully
+	Contacts Validated Successfully
 	$updatecount
 	
 "@
@@ -919,7 +947,9 @@ $($updatefailed -join "`r`n")
 		$mailboxcount++
 	}
 	
-	Send-MailMessage -From 'Contacts Update <it@gopaschal.com>' -To 'Paschal IT <it@gopaschal.com>' -Subject "Contacts Update ($(Get-Date -Format 'MM/dd/yyyy'))" -Body $emailtext -DeliveryNotificationOption OnFailure, OnSuccess -SmtpServer 'mail.paschalcorp.com'
+	if (-not $NoEmail) {
+		Send-MailMessage -From 'Contacts Update <it@gopaschal.com>' -To 'Paschal IT <it@gopaschal.com>' -Subject "Contacts Update ($(Get-Date -Format 'MM/dd/yyyy'))" -Body $emailtext -DeliveryNotificationOption OnFailure, OnSuccess -SmtpServer 'mail.paschalcorp.com'
+	}
 }
 
 
@@ -1204,6 +1234,62 @@ function Rename-PaschalComputer {
 		} catch {
 			Write-Host ""
 			Write-Host -ForegroundColor Red "Rename failed.  Computer Name will remain $ComputerName."
+		}
+	}
+
+}
+
+function Remove-PaschalEXCContacts {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory = $true)]
+		$TargetContact,
+
+		[Parameter()]
+		[ValidatePattern('@(gopaschal|paschalcorp)\.com')]
+		[string[]]$TargetMailboxes,
+
+		[Parameter()]
+		[PSCredential]$Credentials
+	)
+
+	if ($Credentials -isnot [PSCredential] -or -not $Credentials) {
+		$Credentials = Get-Credential
+	}
+
+	$TargetContact = @(Get-ADUser -Filter "ANR -eq '$TargetContact'" -Properties Mail, Mobile, TelephoneNumber) | Where-Object {
+		$_.SamAccountName -notmatch "-adm"
+	}
+
+	if (-not $TargetContact) {
+		throw "$TargetContact does not match any user information"
+	} elseif ($TargetContact.Count -gt 1) {
+		throw "$TargetContact returned multiple matches.  Please refine search and try again"
+	} else {
+		if (-not $TargetMailboxes) {
+			$TargetMailboxes = @((Get-ADUser -Filter * -SearchBase "OU=Users, OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mail, Mobile | Where-Object {
+						$_.Mobile
+					}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail)
+		}
+
+		foreach ($mailbox in $TargetMailboxes) {
+			Write-Host $mailbox
+			$contacts = Get-PaschalEXCContacts -MailboxName $mailbox -Credentials $Credentials
+
+			$contacts.Count
+
+			$contact = $contacts | Where-Object {
+				$_.Mileage -eq $TargetContact.SID
+			}
+
+			$contact.Count
+			$contact.DisplayName
+
+			if ($contact) {
+				$contact.Delete("MoveToDeletedItems")
+			} else {
+				Write-Host "Could not locate single contact matching target."
+			}
 		}
 	}
 
