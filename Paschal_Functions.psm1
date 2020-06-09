@@ -610,6 +610,8 @@ function Enable-PaschalEXCContacts {
 	$userlist = Get-ADUser -Filter * -SearchBase "OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties DisplayName, Mobile, TelephoneNumber, Mail, GivenName, Surname, Department, Title, ProxyAddresses | Where-Object {
 		$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp" -or $_.SamAccountName -eq "warehousenight"
 	}
+
+	$userlist | ForEach-Object { $_.GivenName = ($_.DisplayName -split "\s")[0] }
 	
 	$contacthash = $userlist |
 		Where-Object {
@@ -731,7 +733,7 @@ function Update-PaschalEXCContacts {
 		[ValidatePattern('@gopaschal\.com|@paschalcorp\.com')]
 		[string[]]$TargetMailboxes = @((Get-ADUser -Filter * -SearchBase "OU=Users, OU=Springdale, DC=US, DC=PaschalCorp, DC=com" -Properties Mail, Mobile | Where-Object {
 					$_.Mobile
-				}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail + (get-aduser -Identity warehousenight -Properties Mail).Mail),
+				}).Mail + (Get-ADUser -Identity csr-on-call -Properties Mail).Mail + (Get-ADUser -Identity warehousenight -Properties Mail).Mail),
 		
 		[Parameter(Mandatory = $false)]
 		[PSCredential]$Credentials = (Get-Credential srv),
@@ -764,6 +766,8 @@ function Update-PaschalEXCContacts {
 			$_.Mobile -or $_.TelephoneNumber -or $_.SamAccountName -eq "_temp" -or $_.SamAccountName -eq "warehousenight"
 		}
 	}
+
+	$userlist | ForEach-Object { $_.GivenName = ($_.DisplayName -split "\s")[0] }
 	
 	$contacthash = $userlist |
 		Where-Object {
@@ -871,6 +875,18 @@ Unable to locate Contacts on Exchange Mailbox
 						} else {
 							$contactmatch.DisplayName = $contact.DisplayName
 							$itemsupdated += "DisplayName"
+						}
+						if ($contactmatch.GivenName -eq $contact.FirstName) {
+							$itemsvalidated += "FirstName"
+						} elseif ($contact.FirstName) {
+							$contactmatch.GivenName = $contact.FirstName
+							$itemsupdated += "FirstName"
+						}
+						if ($contactmatch.Surname -eq $contact.LastName) {
+							$itemsvalidated += "LastName"
+						} elseif ($contact.LastName) {
+							$contactmatch.Surname = $contact.LastName
+							$itemsupdated += "LastName"
 						}
 						if ($contact.MobilePhone -and $contactmatch.PhoneNumbers[[Microsoft.Exchange.WebServices.Data.PhoneNumberKey]::MobilePhone] -eq $contact.MobilePhone) {
 							$itemsvalidated += "MobilePhone"
