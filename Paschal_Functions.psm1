@@ -807,6 +807,12 @@ Unable to locate Contacts on Exchange Mailbox
 
 "@
 		} else {
+			foreach ($contact in $contactlist) {
+				if ($contact.Mileage -notin $contacthash.Mileage.Value) {
+					$contact.Delete("MoveToDeletedItems")
+				}
+			}
+
 			foreach ($contact in $contacthash) {
 				$contactmatch = $null;
 				
