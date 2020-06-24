@@ -1339,5 +1339,7 @@ function Update-PaschalWrightsoft {
 
 		Remove-Item "HKLM:\SOFTWARE\WOW6432Node\Wrightsoft" -Force -Recurse -ErrorAction SilentlyContinue
 		Remove-Item "HKCU:\Software\Wrightsoft" -Force -Recurse -ErrorAction SilentlyContinue
+
+		& '\\wapp02v\Wrightsoft\Wrightsoft\Workstation\RSU_WrkStatn via the Web.lnk'
 	}
 }
