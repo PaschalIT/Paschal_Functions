@@ -121,53 +121,53 @@ function PListSelect {
 			
 			Write-Host -NoNewline ($i + $offset + 1); Write-Host -NoNewline ")`t"
 			if ($select[($i + $offset)]) {
-				Write-Host -ForegroundColor Green (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+				Write-Host -ForegroundColor Green (($list[$i + $offset].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 			} else {
-				Write-Host (($list[$i + $offset].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+				Write-Host (($list[$i + $offset].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 			}
 			if ($list[($i + $offset)].Length -gt 20) {
-				Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
+				Write-Host "..." -NoNewline # If more than 20 characters, adds ellipses
 			}
 			
 			if ($list[($i + $offset + 25)]) {
 				# Checks to see if next column is needed; prints items 26-50 if they exist
-				Write-Host -NoNewLine "`t"
+				Write-Host -NoNewline "`t"
 				if ($list[($i + $offset)].Length -lt 8) {
 					# These are to properly align everything in columns
 					Write-Host -NoNewline "`t"
 				}
 				if ($list[($i + $offset)].Length -lt 16) {
-					Write-Host -NoNewLine "`t"
+					Write-Host -NoNewline "`t"
 				}
 				Write-Host -NoNewline ($i + $offset + 26); Write-Host -NoNewline ")`t"
 				if ($select[($i + $offset + 25)]) {
-					Write-Host -ForegroundColor Green (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host -ForegroundColor Green (($list[($i + $offset + 25)].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				} else {
-					Write-Host (($list[($i + $offset + 25)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host (($list[($i + $offset + 25)].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 25)].Length -gt 20) {
-					Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
+					Write-Host "..." -NoNewline # If more than 20 characters, adds ellipses
 				}
 			}
 			
 			if ($list[($i + $offset + 50)]) {
 				# Checks to see if next column is needed; prints items 51-75 if they exist
-				Write-Host -NoNewLine "`t"
+				Write-Host -NoNewline "`t"
 				if ($list[($i + $offset + 25)].Length -lt 8) {
 					# These are to properly align everything in columns
-					Write-Host -NoNewLine "`t"
+					Write-Host -NoNewline "`t"
 				}
 				if ($list[($i + $offset + 25)].Length -lt 16) {
-					Write-Host -NoNewLine "`t"
+					Write-Host -NoNewline "`t"
 				}
-				Write-Host -NoNewLine ($i + $offset + 51); Write-Host -NoNewLine ")`t"
+				Write-Host -NoNewline ($i + $offset + 51); Write-Host -NoNewline ")`t"
 				if ($select[($i + $offset + 50)]) {
-					Write-Host -ForegroundColor Green (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host -ForegroundColor Green (($list[($i + $offset + 50)].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				} else {
-					Write-Host (($list[($i + $offset + 50)].ToCharArray() | Select-Object -first 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
+					Write-Host (($list[($i + $offset + 50)].ToCharArray() | Select-Object -First 20) -join '') -NoNewline # If more than 20 characters, truncates to 20
 				}
 				if ($list[($i + $offset + 50)].Length -gt 20) {
-					Write-Host "..." -NoNewLine # If more than 20 characters, adds ellipses
+					Write-Host "..." -NoNewline # If more than 20 characters, adds ellipses
 				}
 			}
 			
@@ -188,17 +188,17 @@ function PListSelect {
 		#$count += 1
 		#}
 		
-		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  Selecting a highlighted item will deselect it.  Use 'A' to select all, or 'D' to deselect all.  Enter 'Y' when finished." -NoNewLine
+		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  Selecting a highlighted item will deselect it.  Use 'A' to select all, or 'D' to deselect all.  Enter 'Y' when finished." -NoNewline
 		if ($limit) {
-			Write-Host -ForegroundColor Red "  Limit of $limit selections." -NoNewLine
+			Write-Host -ForegroundColor Red "  Limit of $limit selections." -NoNewline
 		}
 		if ($list.Length -gt 75) {
 			Write-Host ""
 			if (($offset + 75) -lt $list.Length) {
-				Write-Host -ForegroundColor Cyan "Use 'N' to display the next page.  " -NoNewLine
+				Write-Host -ForegroundColor Cyan "Use 'N' to display the next page.  " -NoNewline
 			}
 			if (($offset - 75) -ge 0) {
-				Write-Host -ForegroundColor Cyan "Use 'P' to display the previous page." -NoNewLine
+				Write-Host -ForegroundColor Cyan "Use 'P' to display the previous page." -NoNewline
 			}
 		}
 		$x = Read-Host
@@ -314,7 +314,7 @@ function PSelect {
 		
 		foreach ($i in $list) {
 			# Print list of options with numbering
-			Write-Host -NoNewLine "$count)`t"
+			Write-Host -NoNewline "$count)`t"
 			Write-Host $i
 			
 			$count += 1
@@ -322,7 +322,7 @@ function PSelect {
 		
 		Write-Host "`r`n99)`tBack/Exit/Cancel"
 		
-		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  " -NoNewLine
+		Write-Host -ForegroundColor Cyan "`r`nPlease select an item.  " -NoNewline
 		$x = Read-Host
 		
 		try {
@@ -1315,4 +1315,29 @@ function Remove-PaschalEXCContacts {
 		}
 	}
 
+}
+
+function IsAdmin {
+	[CmdletBinding()]
+	param()
+	
+	([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
+}
+
+function Update-PaschalWrightsoft {
+	[CmdletBinding()]
+	param()
+
+	if (!(IsAdmin)) {
+		throw "Please run script as Administrator."
+	} else {
+		if ($links = Get-ChildItem "C:\Users\*\Desktop\Right-*.lnk") {
+			Remove-Item $links -Force
+		} else {
+			Write-Host -ForegroundColor Red "Right-Suite shortcut not found on desktop."
+		}
+
+		Remove-Item "HKLM:\SOFTWARE\WOW6432Node\Wrightsoft" -Force -Recurse -ErrorAction SilentlyContinue
+		Remove-Item "HKCU:\Software\Wrightsoft" -Force -Recurse -ErrorAction SilentlyContinue
+	}
 }
