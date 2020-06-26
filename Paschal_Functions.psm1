@@ -1343,3 +1343,19 @@ function Update-PaschalWrightsoft {
 		& '\\wapp02v\Wrightsoft\Wrightsoft\Workstation\RSU_WrkStatn via the Web.lnk'
 	}
 }
+
+function self {
+	[CmdletBinding()]
+	param()
+
+	$compProperties = @{
+		UserName = $env:USERNAME
+		CompName = $env:COMPUTERNAME
+		IP = (Get-NetIPAddress | Where-Object {$_.InterfaceAlias -eq "Ethernet" -and $_.IPAddress -notmatch ":"}).IPAddress
+		Admin = IsAdmin
+	}
+
+	Write-Host ""
+	$compProperties
+	Write-Host ""
+}
